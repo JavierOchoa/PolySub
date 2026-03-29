@@ -26,8 +26,8 @@ Everything runs in one Next.js app.
 
 ## What The App Supports
 
-- `.srt` files as the main MVP format
-- `.vtt` files as a small extra convenience
+- `.srt` files as the preferred format
+- `.vtt` files are also supported
 - `OpenAI`
 - `Anthropic`
 - `Google`
@@ -87,13 +87,13 @@ http://localhost:3000
 ## How To Use The App
 
 1. Open the app in your browser.
-2. Upload an `.srt` file.
+2. Upload an `.srt` or `.vtt` subtitle file.
 3. Choose your provider.
 4. Choose a model.
 5. Paste your API key.
 6. Choose the source language.
-7. Choose the target language.
-8. Click `Begin Translation`.
+7. Choose the target language you want for the translated subtitles.
+8. Click `Start Translation`.
 9. Wait for the progress panel to finish.
 10. Download the translated file.
 
@@ -166,73 +166,70 @@ tests/
 
 Main page:
 
-- [src/app/page.tsx](/home/reivaj/dev/multilingual_subtitles/src/app/page.tsx)
-
-Server translation route:
-
-- [src/app/api/translate/route.ts](/home/reivaj/dev/multilingual_subtitles/src/app/api/translate/route.ts)
+- [src/app/page.tsx](/home/reivaj/dev/PolySub/src/app/page.tsx)
+- [src/app/api/translate/route.ts](/home/reivaj/dev/PolySub/src/app/api/translate/route.ts)
 
 Main browser workflow:
 
-- [src/components/upload-form.tsx](/home/reivaj/dev/multilingual_subtitles/src/components/upload-form.tsx)
+- [src/components/upload-form.tsx](/home/reivaj/dev/PolySub/src/components/upload-form.tsx)
 
 Translation orchestration:
 
-- [src/lib/translation/orchestrator.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/translation/orchestrator.ts)
+- [src/lib/translation/orchestrator.ts](/home/reivaj/dev/PolySub/src/lib/translation/orchestrator.ts)
 
 Prompt rules:
 
-- [src/lib/translation/prompts.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/translation/prompts.ts)
+- [src/lib/translation/prompts.ts](/home/reivaj/dev/PolySub/src/lib/translation/prompts.ts)
 
 Validation schema:
 
-- [src/lib/translation/schema.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/translation/schema.ts)
+- [src/lib/translation/schema.ts](/home/reivaj/dev/PolySub/src/lib/translation/schema.ts)
 
 Subtitle parsing and rebuilding:
 
-- [src/lib/subtitles/index.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/subtitles/index.ts)
-- [src/lib/subtitles/parse-srt.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/subtitles/parse-srt.ts)
-- [src/lib/subtitles/build-srt.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/subtitles/build-srt.ts)
+- [src/lib/subtitles/index.ts](/home/reivaj/dev/PolySub/src/lib/subtitles/index.ts)
+- [src/lib/subtitles/parse-srt.ts](/home/reivaj/dev/PolySub/src/lib/subtitles/parse-srt.ts)
+- [src/lib/subtitles/build-srt.ts](/home/reivaj/dev/PolySub/src/lib/subtitles/build-srt.ts)
 
 Provider adapters:
 
-- [src/lib/providers/openai.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/providers/openai.ts)
-- [src/lib/providers/anthropic.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/providers/anthropic.ts)
-- [src/lib/providers/google.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/providers/google.ts)
-- [src/lib/providers/registry.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/providers/registry.ts)
+- [src/lib/providers/openai.ts](/home/reivaj/dev/PolySub/src/lib/providers/openai.ts)
+- [src/lib/providers/anthropic.ts](/home/reivaj/dev/PolySub/src/lib/providers/anthropic.ts)
+- [src/lib/providers/google.ts](/home/reivaj/dev/PolySub/src/lib/providers/google.ts)
+- [src/lib/providers/registry.ts](/home/reivaj/dev/PolySub/src/lib/providers/registry.ts)
 
 Curated model list:
 
-- [src/lib/utils/model-options.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/utils/model-options.ts)
+- [src/lib/utils/model-options.ts](/home/reivaj/dev/PolySub/src/lib/utils/model-options.ts)
 
 Smoke tests:
 
-- [tests/translation-flow.test.ts](/home/reivaj/dev/multilingual_subtitles/tests/translation-flow.test.ts)
-- [tests/subtitles.test.ts](/home/reivaj/dev/multilingual_subtitles/tests/subtitles.test.ts)
+- [tests/translation-flow.test.ts](/home/reivaj/dev/PolySub/tests/translation-flow.test.ts)
+- [tests/subtitles.test.ts](/home/reivaj/dev/PolySub/tests/subtitles.test.ts)
 
 ## If You Want To Change Things Later
 
 Add more models:
 
-- Edit [src/lib/utils/model-options.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/utils/model-options.ts)
+- Edit [src/lib/utils/model-options.ts](/home/reivaj/dev/PolySub/src/lib/utils/model-options.ts)
 
 Add another provider:
 
-- Add a new adapter file in [src/lib/providers](/home/reivaj/dev/multilingual_subtitles/src/lib/providers)
-- Register it in [src/lib/providers/registry.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/providers/registry.ts)
-- Add it to [src/lib/utils/model-options.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/utils/model-options.ts)
+- Add a new adapter file in [src/lib/providers](/home/reivaj/dev/PolySub/src/lib/providers)
+- Register it in [src/lib/providers/registry.ts](/home/reivaj/dev/PolySub/src/lib/providers/registry.ts)
+- Add it to [src/lib/utils/model-options.ts](/home/reivaj/dev/PolySub/src/lib/utils/model-options.ts)
 
 Support another subtitle format:
 
-- Add parsing and rebuilding in [src/lib/subtitles](/home/reivaj/dev/multilingual_subtitles/src/lib/subtitles)
-- Update [src/lib/subtitles/index.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/subtitles/index.ts)
-- Update [src/lib/utils/file.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/utils/file.ts)
+- Add parsing and rebuilding in [src/lib/subtitles](/home/reivaj/dev/PolySub/src/lib/subtitles)
+- Update [src/lib/subtitles/index.ts](/home/reivaj/dev/PolySub/src/lib/subtitles/index.ts)
+- Update [src/lib/utils/file.ts](/home/reivaj/dev/PolySub/src/lib/utils/file.ts)
 
 Change translation behavior:
 
-- Edit [src/lib/translation/prompts.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/translation/prompts.ts)
-- Edit [src/lib/translation/orchestrator.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/translation/orchestrator.ts)
-- Edit [src/lib/translation/glossary.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/translation/glossary.ts)
+- Edit [src/lib/translation/prompts.ts](/home/reivaj/dev/PolySub/src/lib/translation/prompts.ts)
+- Edit [src/lib/translation/orchestrator.ts](/home/reivaj/dev/PolySub/src/lib/translation/orchestrator.ts)
+- Edit [src/lib/translation/glossary.ts](/home/reivaj/dev/PolySub/src/lib/translation/glossary.ts)
 
 ## Updating Model Lists
 
@@ -240,7 +237,7 @@ The model list is intentionally curated in code.
 
 Edit:
 
-- [src/lib/utils/model-options.ts](/home/reivaj/dev/multilingual_subtitles/src/lib/utils/model-options.ts)
+- [src/lib/utils/model-options.ts](/home/reivaj/dev/PolySub/src/lib/utils/model-options.ts)
 
 Each model entry can include:
 

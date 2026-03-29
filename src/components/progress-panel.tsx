@@ -4,16 +4,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type ProgressPanelProps = {
   isRunning: boolean;
   isComplete: boolean;
+  hasError: boolean;
   stage: string;
   currentChunk: number;
   totalChunks: number;
   events: string[];
 };
 
-export function ProgressPanel({ isRunning, isComplete, stage, currentChunk, totalChunks, events }: ProgressPanelProps) {
-  const statusLabel = isRunning ? "Running" : isComplete ? "Complete" : "Waiting";
+export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentChunk, totalChunks, events }: ProgressPanelProps) {
+  const statusLabel = hasError ? "Error" : isRunning ? "Running" : isComplete ? "Complete" : "Waiting";
   const progressWidth =
     totalChunks > 0 ? `${Math.max((currentChunk / totalChunks) * 100, isRunning ? 6 : 0)}%` : "0%";
+  const normalizedStage = stage.toLowerCase();
+  const activeStep = isComplete
+    ? 4
+    : normalizedStage.includes("rebuilding") || normalizedStage === "done"
+      ? 4
+      : normalizedStage.includes("translating")
+        ? 3
+        : normalizedStage.includes("preparing")
+          ? 2
+          : normalizedStage.includes("reading") || normalizedStage.includes("parsing")
+            ? 1
+            : 0;
+  const steps = [
+    { index: 1, label: "1. Parse file" },
+    { index: 2, label: "2. Prepare chunks" },
+    { index: 3, label: "3. Translate with context" },
+    { index: 4, label: "4. Rebuild file" },
+  ];
+  const orderedEvents = [...events].reverse();
 
   return (
     <Card className="border-teal-900/10">
@@ -21,41 +41,44 @@ export function ProgressPanel({ isRunning, isComplete, stage, currentChunk, tota
         <div className="flex items-center justify-between gap-3">
           <div>
             <CardTitle>Progress</CardTitle>
-            <CardDescription>Follow each stage from parsing to final file rebuild.</CardDescription>
+            <CardDescription>Track each step as the app parses, translates, and rebuilds your subtitle file.</CardDescription>
           </div>
-          <Badge variant={isRunning || isComplete ? "default" : "outline"}>{statusLabel}</Badge>
+          {hasError || isRunning || isComplete ? <Badge variant="default">{statusLabel}</Badge> : null}
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="rounded-2xl border bg-white p-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-teal-950">Current Stage</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {stage || "Waiting for you to start a translation."}
+        <div>
+          {totalChunks > 0 ? (
+            <div className="mb-3 text-right text-sm text-muted-foreground">
+              <p className="font-semibold text-teal-950">
+                {currentChunk}/{totalChunks}
               </p>
+              <p>chunks</p>
             </div>
-            <div className="text-right text-sm text-muted-foreground">
-              {totalChunks > 0 ? (
-                <>
-                  <p className="font-semibold text-teal-950">
-                    {currentChunk}/{totalChunks}
-                  </p>
-                  <p>chunks</p>
-                </>
-              ) : (
-                <p>No chunks yet</p>
-              )}
-            </div>
-          </div>
-          <div className="mt-4 h-3 overflow-hidden rounded-full bg-secondary">
+          ) : null}
+          <div className="h-3 overflow-hidden rounded-full bg-secondary">
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: progressWidth }} />
           </div>
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span className="rounded-full bg-secondary px-3 py-1">1. Parse file</span>
-            <span className="rounded-full bg-secondary px-3 py-1">2. Prepare chunks</span>
-            <span className="rounded-full bg-secondary px-3 py-1">3. Translate with context</span>
-            <span className="rounded-full bg-secondary px-3 py-1">4. Rebuild file</span>
+            {steps.map((step) => {
+              const isActive = step.index === activeStep;
+              const isCompleted = step.index < activeStep || isComplete;
+
+              return (
+                <span
+                  key={step.index}
+                  className={`rounded-full px-3 py-1 transition-colors ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : isCompleted
+                        ? "bg-primary/15 text-teal-950"
+                        : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {step.label}
+                </span>
+              );
+            })}
           </div>
         </div>
 
@@ -64,10 +87,10 @@ export function ProgressPanel({ isRunning, isComplete, stage, currentChunk, tota
           <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
             {events.length === 0 ? (
               <div className="rounded-2xl border border-dashed bg-secondary/30 px-4 py-5 text-sm text-muted-foreground">
-                No activity yet. Once you start a translation, this area will show the current stage and chunk progress.
+                Progress updates will appear here after the translation starts.
               </div>
             ) : (
-              events.map((event, index) => (
+              orderedEvents.map((event, index) => (
                 <div key={`${event}-${index}`} className="rounded-xl bg-secondary/60 px-3 py-2 text-sm text-teal-950">
                   {event}
                 </div>

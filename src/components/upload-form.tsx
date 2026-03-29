@@ -1,17 +1,15 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, FileText, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, CheckCircle2, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
 
 import { ProgressPanel } from "@/components/progress-panel";
 import { ResultPanel } from "@/components/result-panel";
 import { SettingsPanel } from "@/components/settings-panel";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { ProviderId } from "@/lib/providers/types";
 import { translationRequestSchema, type TranslationRequest } from "@/lib/translation/types";
 import { getFileExtension } from "@/lib/utils/file";
@@ -26,11 +24,11 @@ type StreamEvent =
 const DEFAULT_PROVIDER: ProviderId = "openai";
 const DEFAULT_MODEL = getDefaultModelForProvider(DEFAULT_PROVIDER);
 const DEFAULT_SOURCE_LANGUAGE = "Auto-detect";
-const DEFAULT_TARGET_LANGUAGE = "Spanish";
+const DEFAULT_TARGET_LANGUAGE = "";
 const DEFAULT_OPTIONS: TranslationRequest["options"] = {
   preserveNames: true,
   contextAware: true,
-  foreignDialogueHandling: "preserve",
+  foreignDialogueHandling: "translate_italic",
   translationStyle: "natural",
   chunkSize: 18,
 };
@@ -50,6 +48,8 @@ function readFriendlyClientError(error: unknown) {
 function parseStreamLine(line: string) {
   return JSON.parse(line) as StreamEvent;
 }
+
+type WorkflowState = "idle" | "needs_settings" | "ready" | "running" | "success" | "error";
 
 export function UploadForm() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -71,6 +71,49 @@ export function UploadForm() {
   const [translatedFileName, setTranslatedFileName] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const hasResult = Boolean(translatedContent && translatedFileName);
+  const isPristine = useMemo(
+    () =>
+      !file &&
+      provider === DEFAULT_PROVIDER &&
+      model === DEFAULT_MODEL &&
+      apiKey === "" &&
+      sourceLanguage === DEFAULT_SOURCE_LANGUAGE &&
+      targetLanguage === DEFAULT_TARGET_LANGUAGE &&
+      options.preserveNames === DEFAULT_OPTIONS.preserveNames &&
+      options.contextAware === DEFAULT_OPTIONS.contextAware &&
+      options.foreignDialogueHandling === DEFAULT_OPTIONS.foreignDialogueHandling &&
+      options.translationStyle === DEFAULT_OPTIONS.translationStyle &&
+      options.chunkSize === DEFAULT_OPTIONS.chunkSize &&
+      stage === "" &&
+      currentChunk === 0 &&
+      totalChunks === 0 &&
+      activityLog.length === 0 &&
+      !error &&
+      !translatedContent &&
+      !translatedFileName &&
+      !isRunning,
+    [
+      activityLog.length,
+      apiKey,
+      currentChunk,
+      error,
+      file,
+      isRunning,
+      model,
+      options.chunkSize,
+      options.contextAware,
+      options.foreignDialogueHandling,
+      options.preserveNames,
+      options.translationStyle,
+      provider,
+      sourceLanguage,
+      stage,
+      targetLanguage,
+      totalChunks,
+      translatedContent,
+      translatedFileName,
+    ],
+  );
 
   const validationMessage = useMemo(() => {
     if (!file) {
@@ -98,14 +141,59 @@ export function UploadForm() {
     return null;
   }, [apiKey, file, model, options.chunkSize, provider, sourceLanguage, targetLanguage]);
 
-  const statusTone = error ? "error" : hasResult ? "success" : validationMessage ? "warning" : "ready";
-  const statusMessage = error
-    ? error
+  const workflowState: WorkflowState = error
+    ? "error"
     : hasResult
-      ? "Your translated subtitle file is ready to download."
-      : validationMessage
-        ? validationMessage
-        : "Everything looks ready. Start the translation when you are ready.";
+      ? "success"
+      : isRunning
+        ? "running"
+        : !file
+          ? "idle"
+          : validationMessage
+            ? "needs_settings"
+            : "ready";
+
+  const workflowTone = workflowState === "error" ? "error" : workflowState === "idle" || workflowState === "needs_settings" ? "warning" : "ready";
+  const workflowCopy = useMemo(() => {
+    switch (workflowState) {
+      case "idle":
+        return {
+          title: "Missing information",
+          message: "Upload a subtitle file to begin.",
+          detail: null,
+        };
+      case "needs_settings":
+        return {
+          title: "Missing information",
+          message: validationMessage ?? "Complete the required settings to continue.",
+          detail: null,
+        };
+      case "ready":
+        return {
+          title: "Ready to start",
+          message: "Everything is set. You can start the translation.",
+          detail: null,
+        };
+      case "running":
+        return {
+          title: "Translation in progress",
+          message: "Your subtitle file is being translated in contextual chunks.",
+          detail: null,
+        };
+      case "success":
+        return {
+          title: "Translation complete",
+          message: "Your subtitle file is ready to download.",
+          detail: null,
+        };
+      case "error":
+        return {
+          title: "Translation error",
+          message: "Something went wrong during translation. Review the message and try again.",
+          detail: error,
+        };
+    }
+  }, [error, validationMessage, workflowState]);
 
   const handleProviderChange = (value: ProviderId) => {
     setProvider(value);
@@ -265,64 +353,26 @@ export function UploadForm() {
         <CardHeader className="pb-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <CardTitle>Translation Setup</CardTitle>
+              <CardTitle>Start your translation</CardTitle>
               <CardDescription>
-                Upload your subtitle file, choose a provider, paste your own API key, and download the translated file when it finishes.
+                Upload your subtitle file, choose your translation settings, and start when you&apos;re ready.
               </CardDescription>
             </div>
-            <Badge variant="secondary">Browser-first MVP</Badge>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary">SRT preferred</Badge>
+              <Badge variant="secondary">VTT supported</Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-7">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border bg-white/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Step 1</p>
-              <p className="mt-2 text-sm font-semibold text-teal-950">Upload subtitle file</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">Start with an SRT file. VTT is also accepted.</p>
-            </div>
-            <div className="rounded-2xl border bg-white/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Step 2</p>
-              <p className="mt-2 text-sm font-semibold text-teal-950">Choose translation settings</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">Pick your provider, model, languages, and optional style settings.</p>
-            </div>
-            <div className="rounded-2xl border bg-white/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Step 3</p>
-              <p className="mt-2 text-sm font-semibold text-teal-950">Run and download</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">The app translates in contextual chunks and rebuilds the subtitle file for you.</p>
-            </div>
-          </div>
-
-          <div className="space-y-3 rounded-3xl border bg-white/80 p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-teal-950">Subtitle File</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Upload the subtitle file you want to translate. The app keeps the original timestamps and entry order.
-                </p>
-              </div>
-              <div className="hidden rounded-full bg-secondary px-3 py-1 text-xs font-medium text-teal-950 sm:block">
-                SRT preferred
-              </div>
-            </div>
-            <Label htmlFor="subtitle-file">Subtitle File</Label>
-            <div className="rounded-3xl border border-dashed border-teal-900/20 bg-white/70 p-5">
-              <Input
-                accept=".srt,.vtt"
-                disabled={isRunning}
-                id="subtitle-file"
-                ref={fileInputRef}
-                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                type="file"
-              />
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-teal-950">
-                  <FileText className="h-4 w-4" />
-                  {file ? file.name : "No file selected"}
-                </span>
-                <span>{file ? "File selected and ready for validation." : "SRT is the main MVP format. VTT also works."}</span>
-              </div>
-            </div>
-          </div>
+          <Input
+            accept=".srt,.vtt"
+            disabled={isRunning}
+            id="subtitle-file"
+            ref={fileInputRef}
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+            type="file"
+          />
 
           <SettingsPanel
             apiKey={apiKey}
@@ -341,80 +391,36 @@ export function UploadForm() {
           />
 
           <div
-            className={`rounded-2xl border px-4 py-4 ${
-              statusTone === "error"
+            className={`flex flex-col gap-4 rounded-3xl border p-5 sm:flex-row sm:items-center sm:justify-between ${
+              workflowTone === "error"
                 ? "border-destructive/25 bg-destructive/5 text-destructive"
-                : statusTone === "success"
-                  ? "border-teal-300 bg-teal-50 text-teal-950"
-                  : statusTone === "warning"
-                    ? "border-amber-300 bg-amber-50 text-amber-950"
-                    : "border-teal-200 bg-teal-50/70 text-teal-950"
+                : workflowTone === "warning"
+                  ? "border-amber-300 bg-amber-50/70 text-amber-950"
+                  : "border-teal-200 bg-teal-50/60 text-teal-950"
             }`}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex max-w-xl items-start gap-3">
               <div className="mt-0.5">
-                {statusTone === "error" ? (
+                {workflowTone === "error" ? (
                   <AlertCircle className="h-4 w-4" />
-                ) : statusTone === "success" ? (
+                ) : workflowState === "success" ? (
                   <CheckCircle2 className="h-4 w-4" />
                 ) : (
                   <ShieldCheck className="h-4 w-4" />
                 )}
               </div>
               <div>
-                <p className="text-sm font-semibold">
-                  {statusTone === "error"
-                    ? "Something needs attention"
-                    : statusTone === "success"
-                      ? "Translation complete"
-                      : statusTone === "warning"
-                        ? "Almost ready"
-                        : "Ready to start"}
-                </p>
-                <p className="mt-1 text-sm leading-6 opacity-90">{statusMessage}</p>
+                <p className="text-sm font-semibold">{workflowCopy.title}</p>
+                <p className="mt-1 text-sm leading-6 opacity-90">{workflowCopy.message}</p>
+                {workflowCopy.detail ? <p className="mt-2 text-xs leading-5 opacity-80">{workflowCopy.detail}</p> : null}
               </div>
             </div>
-          </div>
-
-          {error ? (
-            <Alert className="border-destructive/25 bg-destructive/5 text-destructive">
-              <AlertTitle className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                Translation Error
-              </AlertTitle>
-              <AlertDescription>
-                {error} Check the provider, model, API key, and subtitle file, then try again.
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          {validationMessage && !error ? (
-            <Alert className="border-amber-300 bg-amber-50 text-amber-950">
-              <AlertTitle>Missing Information</AlertTitle>
-              <AlertDescription>{validationMessage} The translate button will unlock automatically once everything is filled in.</AlertDescription>
-            </Alert>
-          ) : null}
-
-          {hasResult && !error ? (
-            <Alert className="border-teal-300 bg-teal-50 text-teal-950">
-              <AlertTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                Translation Ready
-              </AlertTitle>
-              <AlertDescription>
-                Your translated subtitle file is ready. Use the download button in the Results panel.
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div className="flex flex-col gap-4 rounded-3xl border bg-amber-50/45 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-              The app keeps your subtitle timing data in code, sends only the chunk text and indexes to the model, and rebuilds the final file itself after translation.
-            </p>
             <div className="flex flex-wrap gap-3">
-              <Button onClick={resetApp} size="lg" variant="outline">
-                Reset
-              </Button>
+              {!isPristine ? (
+                <Button onClick={resetApp} size="lg" variant="outline">
+                  Reset
+                </Button>
+              ) : null}
               <Button disabled={Boolean(validationMessage) || isRunning} onClick={handleTranslate} size="lg">
                 {isRunning ? (
                   <>
@@ -424,7 +430,7 @@ export function UploadForm() {
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4" />
-                    Begin Translation
+                    Start Translation
                   </>
                 )}
               </Button>
@@ -437,6 +443,7 @@ export function UploadForm() {
         <ProgressPanel
           currentChunk={currentChunk}
           events={activityLog}
+          hasError={Boolean(error)}
           isComplete={hasResult}
           isRunning={isRunning}
           stage={stage}

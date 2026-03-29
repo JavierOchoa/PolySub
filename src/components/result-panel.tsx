@@ -31,9 +31,9 @@ export function ResultPanel({ isRunning, onReset, translatedContent, translatedF
     <Card className="border-teal-900/10">
       <CardHeader>
         <CardTitle>Results</CardTitle>
-        <CardDescription>Download the finished subtitle file here when translation is complete.</CardDescription>
+        <CardDescription>Your translated file will appear here when ready.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {translatedContent && translatedFileName ? (
           <div className="rounded-2xl border bg-white p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -42,11 +42,8 @@ export function ResultPanel({ isRunning, onReset, translatedContent, translatedF
                   <FileCheck2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-semibold text-teal-950">Translation finished successfully</p>
+                  <p className="font-semibold text-teal-950">Translation complete. Your subtitle file is ready to download.</p>
                   <p className="mt-1 text-sm font-medium text-teal-950/85">{translatedFileName}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Ready to download. The app rebuilt the subtitle file using the original timing data and structure.
-                  </p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -65,12 +62,7 @@ export function ResultPanel({ isRunning, onReset, translatedContent, translatedF
             Translation is running. Your download will appear here automatically when the last chunk finishes.
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed bg-white/70 p-6">
-            <p className="text-sm font-semibold text-teal-950">No translated file yet</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Upload a subtitle file, complete the settings, and start the translation. When it finishes, the download button will appear here.
-            </p>
-          </div>
+          <p className="text-xs leading-6 text-muted-foreground/80">No translated file yet. Start a translation to generate one.</p>
         )}
       </CardContent>
     </Card>

@@ -2,7 +2,7 @@
 
 This is a browser-based subtitle translation app.
 
-You upload a subtitle file, choose an AI provider, paste your own API key, pick the source and target language, and the app returns a translated subtitle file for download.
+You upload a subtitle file, choose an AI provider, paste your own API key, pick the original subtitle language and what language to translate into, and the app returns a translated subtitle file for download from the Results panel.
 
 The key product idea is simple:
 
@@ -35,6 +35,7 @@ Everything runs in one Next.js app.
 - strict JSON validation for model output
 - one repair attempt if a model returns malformed JSON
 - progress updates while translation is running
+- a guided translation workflow with progress and results panels
 
 ## How It Works
 
@@ -91,8 +92,8 @@ http://localhost:3000
 3. Choose your provider.
 4. Choose a model.
 5. Paste your API key.
-6. Choose the source language.
-7. Choose the target language you want for the translated subtitles.
+6. Choose the original subtitle language.
+7. Choose which language to translate into.
 8. Click `Start Translation`.
 9. Wait for the progress panel to finish.
 10. Download the translated file.

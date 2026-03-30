@@ -12,7 +12,6 @@ import {
   PROVIDER_OPTIONS,
   getProviderModelById,
   getVisibleProviderModels,
-  hasLegacyProviderModels,
 } from "@/lib/utils/model-options";
 import type { ProviderId } from "@/lib/providers/types";
 import type { TranslationRequest } from "@/lib/translation/types";
@@ -52,7 +51,7 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   const modelOptions = getVisibleProviderModels(provider);
   const selectedModel = getProviderModelById(provider, model);
-  const showLegacyNote = hasLegacyProviderModels(provider);
+  const providerLabel = PROVIDER_OPTIONS.find((option) => option.id === provider)?.label ?? "API";
 
   return (
     <div className="space-y-6">
@@ -97,36 +96,20 @@ export function SettingsPanel({
                   ))}
                 </SelectContent>
               </Select>
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Use the recommended model for the best balance of quality and speed.
-                </p>
-                {selectedModel?.description ? <p className="text-xs text-muted-foreground">{selectedModel.description}</p> : null}
-                {selectedModel ? (
-                  <div className="flex flex-wrap gap-2">
-                    {selectedModel.recommended ? <Badge>Recommended</Badge> : null}
-                    <Badge variant="outline">{selectedModel.speedLabel}</Badge>
-                    <Badge variant="outline">{selectedModel.qualityLabel}</Badge>
-                    {selectedModel.preview ? <Badge variant="outline">Preview</Badge> : null}
-                  </div>
-                ) : null}
-                {selectedModel?.preview ? (
-                  <p className="text-xs text-muted-foreground">
-                    Preview models can change faster than stable models. For production subtitle work, stable models are the safer default.
-                  </p>
-                ) : null}
-                {showLegacyNote ? (
-                  <p className="text-xs text-muted-foreground">
-                    Older models are kept in code but hidden from this dropdown by default.
-                  </p>
-                ) : null}
-              </div>
+              {selectedModel ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedModel.recommended ? <Badge>Recommended</Badge> : null}
+                  <Badge variant="outline">{selectedModel.speedLabel}</Badge>
+                  <Badge variant="outline">{selectedModel.qualityLabel}</Badge>
+                  {selectedModel.preview ? <Badge variant="outline">Preview</Badge> : null}
+                </div>
+              ) : null}
             </div>
           </div>
 
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="source-language">Source Language</Label>
+              <Label htmlFor="source-language">Original Subtitle Language</Label>
               <Select disabled={disabled} onValueChange={onSourceLanguageChange} value={sourceLanguage}>
                 <SelectTrigger id="source-language">
                   <SelectValue placeholder="Choose the source language" />
@@ -139,14 +122,11 @@ export function SettingsPanel({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Select the main language in the subtitle file.
-              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="target-language">Target Language</Label>
-              <Select disabled={disabled} onValueChange={onTargetLanguageChange} value={targetLanguage || undefined}>
+              <Label htmlFor="target-language">Translate Into</Label>
+              <Select disabled={disabled} onValueChange={onTargetLanguageChange} value={targetLanguage}>
                 <SelectTrigger id="target-language">
                   <SelectValue placeholder="Select your target language" />
                 </SelectTrigger>
@@ -158,12 +138,28 @@ export function SettingsPanel({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Choose the language you want the subtitles translated into.
-              </p>
             </div>
           </div>
         </div>
+
+        <div className="mt-6 space-y-2">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-teal-950">{providerLabel} API Key</p>
+            <span className="cursor-help text-xs text-muted-foreground" title="Your key is used only for this translation request and is not stored by the app." aria-label="Your key is used only for this translation request and is not stored by the app.">
+              ⓘ
+            </span>
+          </div>
+          <Input
+            autoComplete="off"
+            disabled={disabled}
+            id="api-key"
+            onChange={(event) => onApiKeyChange(event.target.value)}
+            placeholder="Paste your key here"
+            type="password"
+            value={apiKey}
+          />
+        </div>
+
         <details className="group mt-6 rounded-3xl border bg-white/80 p-5" open={false}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-teal-950">
             Advanced Options
@@ -216,7 +212,7 @@ export function SettingsPanel({
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="translation-style">Translation Style</Label>
+                  <p className="text-sm font-medium text-teal-950">Translation Style</p>
                   <Select
                     disabled={disabled}
                     onValueChange={(value) =>
@@ -239,7 +235,7 @@ export function SettingsPanel({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="chunk-size">Chunk Size</Label>
+                  <p className="text-sm font-medium text-teal-950">Chunk Size</p>
                   <Input
                     disabled={disabled}
                     id="chunk-size"
@@ -261,7 +257,7 @@ export function SettingsPanel({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="foreign-dialogue-handling">Foreign Dialogue Handling</Label>
+                <p className="text-sm font-medium text-teal-950">Foreign Dialogue Handling</p>
                 <Select
                   disabled={disabled}
                   onValueChange={(value) =>
@@ -277,7 +273,9 @@ export function SettingsPanel({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="preserve">Preserve</SelectItem>
-                    <SelectItem value="translate_italic">Translate and Italicize it</SelectItem>
+                    <SelectItem value="translate_italic">
+                      Translate and <em>italicize it</em>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
@@ -287,27 +285,6 @@ export function SettingsPanel({
             </div>
           </div>
         </details>
-      </div>
-
-      <div className="rounded-3xl border bg-white/80 p-5">
-        <div className="mb-4">
-          <p className="text-sm font-semibold text-teal-950">API Key</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Your key is used only for this translation request and is not stored by the app.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Input
-            autoComplete="off"
-            disabled={disabled}
-            id="api-key"
-            onChange={(event) => onApiKeyChange(event.target.value)}
-            placeholder="Paste your provider API key"
-            type="password"
-            value={apiKey}
-          />
-        </div>
       </div>
     </div>
   );

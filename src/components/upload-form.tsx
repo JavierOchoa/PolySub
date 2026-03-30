@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
+import { LoaderCircle, Sparkles } from "lucide-react";
 
 import { ProgressPanel } from "@/components/progress-panel";
 import { ResultPanel } from "@/components/result-panel";
@@ -399,29 +399,22 @@ export function UploadForm() {
                   : "border-teal-200 bg-teal-50/60 text-teal-950"
             }`}
           >
-            <div className="flex max-w-xl items-start gap-3">
-              <div className="mt-0.5">
-                {workflowTone === "error" ? (
-                  <AlertCircle className="h-4 w-4" />
-                ) : workflowState === "success" ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : (
-                  <ShieldCheck className="h-4 w-4" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-semibold">{workflowCopy.title}</p>
-                <p className="mt-1 text-sm leading-6 opacity-90">{workflowCopy.message}</p>
-                {workflowCopy.detail ? <p className="mt-2 text-xs leading-5 opacity-80">{workflowCopy.detail}</p> : null}
-              </div>
+            <div className="max-w-xl">
+              <p className="text-xs leading-5 opacity-90 sm:text-sm sm:leading-6">{workflowCopy.message}</p>
+              {workflowCopy.detail ? <p className="mt-2 text-xs leading-5 opacity-80">{workflowCopy.detail}</p> : null}
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
               {!isPristine ? (
-                <Button onClick={resetApp} size="lg" variant="outline">
+                <Button className="whitespace-nowrap" onClick={resetApp} size="lg" variant="outline">
                   Reset
                 </Button>
               ) : null}
-              <Button disabled={Boolean(validationMessage) || isRunning} onClick={handleTranslate} size="lg">
+              <Button
+                className="whitespace-nowrap"
+                disabled={Boolean(validationMessage) || isRunning}
+                onClick={handleTranslate}
+                size="lg"
+              >
                 {isRunning ? (
                   <>
                     <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -450,8 +443,10 @@ export function UploadForm() {
           totalChunks={totalChunks}
         />
         <ResultPanel
-          isRunning={isRunning}
           onReset={resetApp}
+          state={
+            error ? "error" : hasResult ? "complete" : isRunning ? "running" : "idle"
+          }
           translatedContent={translatedContent}
           translatedFileName={translatedFileName}
         />

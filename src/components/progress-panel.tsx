@@ -82,21 +82,18 @@ export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentC
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-5">
-          <p className="text-sm font-semibold text-teal-950">Activity Log</p>
-          <div className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
-            {events.length === 0 ? (
-              <div className="rounded-2xl border border-dashed bg-secondary/30 px-4 py-5 text-sm text-muted-foreground">
-                Progress updates will appear here after the translation starts.
+        <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+          {events.length === 0 ? (
+            <div className="rounded-2xl border border-dashed bg-secondary/30 px-4 py-5 text-center text-sm uppercase tracking-wide text-muted-foreground/70">
+              Waiting to start
+            </div>
+          ) : (
+            orderedEvents.map((event, index) => (
+              <div key={`${event}-${index}`} className="rounded-xl bg-secondary/60 px-3 py-2 text-sm text-teal-950">
+                {event}
               </div>
-            ) : (
-              orderedEvents.map((event, index) => (
-                <div key={`${event}-${index}`} className="rounded-xl bg-secondary/60 px-3 py-2 text-sm text-teal-950">
-                  {event}
-                </div>
-              ))
-            )}
-          </div>
+            ))
+          )}
         </div>
       </CardContent>
     </Card>

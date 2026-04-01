@@ -8,10 +8,9 @@ type ProgressPanelProps = {
   stage: string;
   currentChunk: number;
   totalChunks: number;
-  events: string[];
 };
 
-export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentChunk, totalChunks, events }: ProgressPanelProps) {
+export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentChunk, totalChunks }: ProgressPanelProps) {
   const statusLabel = hasError ? "Error" : isRunning ? "Running" : isComplete ? "Complete" : "Waiting";
   const progressWidth =
     totalChunks > 0 ? `${Math.max((currentChunk / totalChunks) * 100, isRunning ? 6 : 0)}%` : "0%";
@@ -33,7 +32,6 @@ export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentC
     { index: 3, label: "3. Translate with context" },
     { index: 4, label: "4. Rebuild file" },
   ];
-  const orderedEvents = [...events].reverse();
 
   return (
     <Card className="border-teal-900/10">
@@ -80,20 +78,6 @@ export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentC
               );
             })}
           </div>
-        </div>
-
-        <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
-          {events.length === 0 ? (
-            <div className="rounded-2xl border border-dashed bg-secondary/30 px-4 py-5 text-center text-sm uppercase tracking-wide text-muted-foreground/70">
-              Waiting to start
-            </div>
-          ) : (
-            orderedEvents.map((event, index) => (
-              <div key={`${event}-${index}`} className="rounded-xl bg-secondary/60 px-3 py-2 text-sm text-teal-950">
-                {event}
-              </div>
-            ))
-          )}
         </div>
       </CardContent>
     </Card>

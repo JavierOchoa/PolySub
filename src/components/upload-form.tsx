@@ -435,7 +435,6 @@ export function UploadForm() {
       <div className="space-y-6">
         <ProgressPanel
           currentChunk={currentChunk}
-          events={activityLog}
           hasError={Boolean(error)}
           isComplete={hasResult}
           isRunning={isRunning}

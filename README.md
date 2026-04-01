@@ -1,6 +1,6 @@
-# Subtitle Context Translator
+# PolySub
 
-This is a browser-based subtitle translation app.
+PolySub is a browser-based subtitle translation app.
 
 You upload a subtitle file, choose an AI provider, paste your own API key, pick the original subtitle language and what language to translate into, and the app returns a translated subtitle file for download from the Results panel.
 

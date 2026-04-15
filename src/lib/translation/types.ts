@@ -8,7 +8,7 @@ export const foreignDialogueHandlingSchema = z.enum(["preserve", "translate_ital
 export const translationRequestSchema = z.object({
   fileName: z.string().min(1),
   fileContent: z.string().min(1),
-  provider: z.enum(["openai", "anthropic", "google"]),
+  provider: z.enum(["openai", "anthropic", "google", "openrouter"]),
   model: z.string().min(1),
   apiKey: z.string().min(1),
   sourceLanguage: z.string().min(1),

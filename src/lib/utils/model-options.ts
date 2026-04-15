@@ -16,6 +16,7 @@ export const PROVIDER_OPTIONS: Array<{ id: ProviderId; label: string }> = [
   { id: "openai", label: "OpenAI" },
   { id: "anthropic", label: "Anthropic" },
   { id: "google", label: "Google" },
+  { id: "openrouter", label: "OpenRouter" },
 ];
 
 // This file is the single curated model catalog for the app.
@@ -124,6 +125,7 @@ export const PROVIDER_MODELS: Record<ProviderId, ProviderModelOption[]> = {
       preview: true,
     },
   ],
+  openrouter: [],
 };
 
 export function getVisibleProviderModels(provider: ProviderId) {

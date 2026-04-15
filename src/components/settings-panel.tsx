@@ -83,27 +83,54 @@ export function SettingsPanel({
 
             <div className="space-y-2">
               <Label htmlFor="model">Model</Label>
-              <Select disabled={disabled} onValueChange={onModelChange} value={model}>
-                <SelectTrigger id="model">
-                  <SelectValue placeholder="Choose a model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {modelOptions.map((option) => (
-                    <SelectItem key={option.id} textValue={option.label} value={option.id}>
-                      {option.label}
-                      {option.preview ? " (Preview)" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedModel ? (
-                <div className="flex flex-wrap gap-2">
-                  {selectedModel.recommended ? <Badge>Recommended</Badge> : null}
-                  <Badge variant="outline">{selectedModel.speedLabel}</Badge>
-                  <Badge variant="outline">{selectedModel.qualityLabel}</Badge>
-                  {selectedModel.preview ? <Badge variant="outline">Preview</Badge> : null}
-                </div>
-              ) : null}
+              {provider === "openrouter" ? (
+                <>
+                  <Input
+                    autoComplete="off"
+                    disabled={disabled}
+                    id="model"
+                    onChange={(event) => onModelChange(event.target.value)}
+                    placeholder="e.g. openai/gpt-5.4, anthropic/claude-opus-4.6, google/gemini-2.5-flash"
+                    type="text"
+                    value={model}
+                  />
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Enter any OpenRouter model ID supported by your account.{" "}
+                    <a
+                      className="underline underline-offset-2 hover:text-foreground"
+                      href="https://openrouter.ai/models"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Browse available models
+                    </a>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Select disabled={disabled} onValueChange={onModelChange} value={model}>
+                    <SelectTrigger id="model">
+                      <SelectValue placeholder="Choose a model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {modelOptions.map((option) => (
+                        <SelectItem key={option.id} textValue={option.label} value={option.id}>
+                          {option.label}
+                          {option.preview ? " (Preview)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedModel ? (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedModel.recommended ? <Badge>Recommended</Badge> : null}
+                      <Badge variant="outline">{selectedModel.speedLabel}</Badge>
+                      <Badge variant="outline">{selectedModel.qualityLabel}</Badge>
+                      {selectedModel.preview ? <Badge variant="outline">Preview</Badge> : null}
+                    </div>
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 import { AppError } from "@/lib/utils/errors";
 
-type ProviderLabel = "OpenAI" | "Anthropic" | "Google";
+type ProviderLabel = "OpenAI" | "Anthropic" | "Google" | "OpenRouter";
 
 export function throwForProviderNetworkError(provider: ProviderLabel, error: unknown): never {
   if (error instanceof AppError) {

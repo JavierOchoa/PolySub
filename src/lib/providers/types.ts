@@ -1,4 +1,4 @@
-export type ProviderId = "openai" | "anthropic" | "google";
+export type ProviderId = "openai" | "anthropic" | "google" | "openrouter";
 
 export type StructuredJsonRequest = {
   apiKey: string;

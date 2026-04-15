@@ -31,7 +31,9 @@ Everything runs in one Next.js app.
 - `OpenAI`
 - `Anthropic`
 - `Google`
+- `OpenRouter` (any model ID)
 - curated model lists per provider
+- OpenRouter support with custom model IDs
 - strict JSON validation for model output
 - one repair attempt if a model returns malformed JSON
 - progress updates while translation is running
@@ -197,6 +199,7 @@ Provider adapters:
 - [src/lib/providers/openai.ts](/home/reivaj/dev/PolySub/src/lib/providers/openai.ts)
 - [src/lib/providers/anthropic.ts](/home/reivaj/dev/PolySub/src/lib/providers/anthropic.ts)
 - [src/lib/providers/google.ts](/home/reivaj/dev/PolySub/src/lib/providers/google.ts)
+- [src/lib/providers/openrouter.ts](/home/reivaj/dev/PolySub/src/lib/providers/openrouter.ts)
 - [src/lib/providers/registry.ts](/home/reivaj/dev/PolySub/src/lib/providers/registry.ts)
 
 Curated model list:
@@ -218,7 +221,9 @@ Add another provider:
 
 - Add a new adapter file in [src/lib/providers](/home/reivaj/dev/PolySub/src/lib/providers)
 - Register it in [src/lib/providers/registry.ts](/home/reivaj/dev/PolySub/src/lib/providers/registry.ts)
+- Add it to [src/lib/providers/types.ts](/home/reivaj/dev/PolySub/src/lib/providers/types.ts)
 - Add it to [src/lib/utils/model-options.ts](/home/reivaj/dev/PolySub/src/lib/utils/model-options.ts)
+- Add it to the provider enum in [src/lib/translation/types.ts](/home/reivaj/dev/PolySub/src/lib/translation/types.ts)
 
 Support another subtitle format:
 
@@ -275,6 +280,25 @@ Current curated picks:
   - `gemini-2.5-flash-lite` as the fast option
   - `gemini-3-flash-preview` as a clearly marked preview option
   - `gemini-3-pro-preview` as a clearly marked premium preview option
+
+## OpenRouter
+
+OpenRouter is supported as a provider with a custom model ID field instead of a curated dropdown. This lets you use any model available through OpenRouter.
+
+How it works:
+
+- Select **OpenRouter** as the provider.
+- Paste your **OpenRouter API key**.
+- Enter the **model ID** in the text field (no dropdown).
+- The app sends requests to OpenRouter's OpenAI-compatible API.
+
+Example model IDs you can enter:
+
+- `openai/gpt-5.4`
+- `anthropic/claude-opus-4.6`
+- `google/gemini-2.5-flash`
+
+You can browse all available models at [openrouter.ai/models](https://openrouter.ai/models).
 
 ## Verification Already Run
 

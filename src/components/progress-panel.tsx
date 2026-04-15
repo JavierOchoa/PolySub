@@ -55,7 +55,10 @@ export function ProgressPanel({ isRunning, isComplete, hasError, stage, currentC
             </div>
           ) : null}
           <div className="h-3 overflow-hidden rounded-full bg-secondary">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: progressWidth }} />
+            <div
+              className={`h-full rounded-full transition-all ${hasError ? "bg-destructive" : "bg-primary"}`}
+              style={{ width: progressWidth }}
+            />
           </div>
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
             {steps.map((step) => {

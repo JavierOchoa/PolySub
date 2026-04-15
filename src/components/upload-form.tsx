@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { LoaderCircle, OctagonX, Sparkles } from "lucide-react";
 
 import { ProgressPanel } from "@/components/progress-panel";
 import { ResultPanel } from "@/components/result-panel";
@@ -134,6 +134,10 @@ export function UploadForm() {
       return "Complete all required settings.";
     }
 
+    if (provider === "openrouter" && !model.trim()) {
+      return "Enter an OpenRouter model ID.";
+    }
+
     if (options.chunkSize < 4 || options.chunkSize > 40) {
       return "Chunk size must be between 4 and 40.";
     }
@@ -197,7 +201,11 @@ export function UploadForm() {
 
   const handleProviderChange = (value: ProviderId) => {
     setProvider(value);
-    setModel(getDefaultModelForProvider(value));
+    if (value === "openrouter") {
+      setModel("");
+    } else {
+      setModel(getDefaultModelForProvider(value));
+    }
   };
 
   const appendLog = (message: string) => {
@@ -227,6 +235,15 @@ export function UploadForm() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleStop = () => {
+    activeRequestIdRef.current += 1;
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsRunning(false);
+    setStage("stopped");
+    appendLog("Translation stopped by user");
   };
 
   const handleTranslate = async () => {
@@ -332,6 +349,11 @@ export function UploadForm() {
       }
 
       handleEventLine(buffer);
+
+      if (!translatedContent && !error) {
+        setError("Translation ended unexpectedly without producing a result. Try again.");
+        setStage("error");
+      }
     } catch (unknownError) {
       if (unknownError instanceof Error && unknownError.name === "AbortError") {
         return;
@@ -404,7 +426,12 @@ export function UploadForm() {
               {workflowCopy.detail ? <p className="mt-2 text-xs leading-5 opacity-80">{workflowCopy.detail}</p> : null}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-              {!isPristine ? (
+              {isRunning ? (
+                <Button className="whitespace-nowrap" onClick={handleStop} size="lg" variant="outline">
+                  <OctagonX className="h-4 w-4" />
+                  Stop
+                </Button>
+              ) : !isPristine ? (
                 <Button className="whitespace-nowrap" onClick={resetApp} size="lg" variant="outline">
                   Reset
                 </Button>
@@ -442,6 +469,7 @@ export function UploadForm() {
           totalChunks={totalChunks}
         />
         <ResultPanel
+          errorMessage={error}
           onReset={resetApp}
           state={
             error ? "error" : hasResult ? "complete" : isRunning ? "running" : "idle"
